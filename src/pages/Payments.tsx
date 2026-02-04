@@ -15,34 +15,19 @@ interface Payment {
   createdAt?: string;
 }
 
-// Mock data for demonstration
-const mockPayments: Payment[] = [
-  { id: 'PAY-001', orderId: 'ORD-001', customerName: 'John Doe', amount: 299, method: 'Credit Card', status: 'completed', createdAt: '2024-04-10' },
-  { id: 'PAY-002', orderId: 'ORD-002', customerName: 'Jane Smith', amount: 398, method: 'PayPal', status: 'completed', createdAt: '2024-04-12' },
-  { id: 'PAY-003', orderId: 'ORD-003', customerName: 'Bob Wilson', amount: 129, method: 'Credit Card', status: 'pending', createdAt: '2024-04-13' },
-  { id: 'PAY-004', orderId: 'ORD-004', customerName: 'Alice Brown', amount: 148, method: 'Debit Card', status: 'completed', createdAt: '2024-04-14' },
-  { id: 'PAY-005', orderId: 'ORD-005', customerName: 'Charlie Davis', amount: 597, method: 'Credit Card', status: 'completed', createdAt: '2024-04-15' },
-  { id: 'PAY-006', orderId: 'ORD-006', customerName: 'Eve Johnson', amount: 250, method: 'Credit Card', status: 'refunded', createdAt: '2024-04-08' },
-  { id: 'PAY-007', orderId: 'ORD-007', customerName: 'Frank Miller', amount: 175, method: 'PayPal', status: 'failed', createdAt: '2024-04-09' },
-];
-
 export default function Payments() {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: paymentsData, isLoading } = useQuery({
+  const { data: paymentsData, isLoading, error } = useQuery({
     queryKey: ['payments'],
     queryFn: async () => {
-      try {
-        const response = await paymentsApi.getAll();
-        return response.data;
-      } catch {
-        return mockPayments;
-      }
+      const response = await paymentsApi.getAll();
+      return response.data;
     },
   });
 
   // Show all payments including those from cancelled orders for accounting transparency
-  const payments = (paymentsData || mockPayments).filter((p: Payment) =>
+  const payments = (paymentsData || []).filter((p: Payment) =>
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.orderId.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,7 +53,7 @@ export default function Payments() {
     }
   };
 
-  const getMethodIcon = (method: string) => {
+  const getMethodIcon = () => {
     return <CreditCard className="w-4 h-4 text-muted-foreground" />;
   };
 
@@ -76,6 +61,17 @@ export default function Payments() {
   const totalRevenue = payments.filter((p: Payment) => p.status === 'completed').reduce((sum: number, p: Payment) => sum + p.amount, 0);
   const pendingAmount = payments.filter((p: Payment) => p.status === 'pending').reduce((sum: number, p: Payment) => sum + p.amount, 0);
   const refundedAmount = payments.filter((p: Payment) => p.status === 'refunded').reduce((sum: number, p: Payment) => sum + p.amount, 0);
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <PageHeader title="Payments" description="View all payment transactions" />
+        <div className="stat-card p-8 text-center text-destructive">
+          Failed to load payments. Please check your backend connection.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
@@ -164,7 +160,7 @@ export default function Payments() {
                   </td>
                   <td>
                     <div className="flex items-center gap-2">
-                      {getMethodIcon(payment.method)}
+                      {getMethodIcon()}
                       <span className="text-sm">{payment.method}</span>
                     </div>
                   </td>

@@ -23,8 +23,8 @@ export const setAuthToken = (token: string | null) => {
 
 // Protected API endpoints - requires Clerk authentication
 export const customersApi = {
-  getAll: () => api.get('/customers/customer'),
-  delete: (id: string) => api.post(`/customers/customer/delete/${id}`),
+  getAll: () => api.get('/customer'),
+  delete: (id: string) => api.post(`/customer/delete/${id}`),
 };
 
 export const inventoryApi = {
@@ -39,11 +39,15 @@ export const inventoryApi = {
 export const ordersApi = {
   getAll: () => api.get('/orders'),
   updateStatus: (id: string, status: string) => 
-    api.patch(`/orders/order/status/${id}`, { status }),
+    api.patch(`/orders/status/${id}`, { status }),
 };
 
 export const paymentsApi = {
   getAll: () => api.get('/payments'),
+};
+
+export const userApi = {
+  get: () => api.get('/user'),
 };
 
 export default api;
