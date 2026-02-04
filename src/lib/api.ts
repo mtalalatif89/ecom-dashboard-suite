@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3000';
+// TODO: Replace with your backend URL
+const API_BASE_URL = 'YOUR_BACKEND_URL_HERE';
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -11,7 +12,7 @@ export const api = axios.create({
   },
 });
 
-// Function to set auth token (to be called with Clerk's getToken)
+// Function to set auth token (called from ProtectedRoute with Clerk's getToken)
 export const setAuthToken = (token: string | null) => {
   if (token) {
     api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -20,7 +21,7 @@ export const setAuthToken = (token: string | null) => {
   }
 };
 
-// API endpoints
+// Protected API endpoints - requires Clerk authentication
 export const customersApi = {
   getAll: () => api.get('/customers/customer'),
   delete: (id: string) => api.post(`/customers/customer/delete/${id}`),
