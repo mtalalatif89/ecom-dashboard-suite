@@ -20,7 +20,15 @@ const queryClient = new QueryClient();
 const CLERK_PUBLISHABLE_KEY = "pk_test_cXVhbGl0eS1hbGJhY29yZS0yMS5jbGVyay5hY2NvdW50cy5kZXYk";
 
 const App = () => (
-  <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
+  <ClerkProvider 
+    publishableKey={CLERK_PUBLISHABLE_KEY}
+    appearance={{
+      elements: {
+        footerActionLink: { display: 'none' },
+        footerActionText: { display: 'none' },
+      }
+    }}
+  >
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
