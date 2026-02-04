@@ -57,8 +57,24 @@ export default function Dashboard() {
   });
 
   // Calculate totals from API data or use defaults
-  const orders = ordersData?.data || [];
-  const payments = paymentsApiData?.data || [];
+  // Handle various response formats: { data: [...] }, { orders: [...] }, or just [...]
+  const rawOrders = ordersData?.data;
+  const orders = Array.isArray(rawOrders) 
+    ? rawOrders 
+    : Array.isArray(rawOrders?.data) 
+      ? rawOrders.data 
+      : Array.isArray(rawOrders?.orders) 
+        ? rawOrders.orders 
+        : [];
+  
+  const rawPayments = paymentsApiData?.data;
+  const payments = Array.isArray(rawPayments) 
+    ? rawPayments 
+    : Array.isArray(rawPayments?.data) 
+      ? rawPayments.data 
+      : Array.isArray(rawPayments?.payments) 
+        ? rawPayments.payments 
+        : [];
 
   const totalOrders = orders.length || 435;
   const cancelledOrders = orders.filter((o: any) => o.status === 'cancelled').length || 25;
