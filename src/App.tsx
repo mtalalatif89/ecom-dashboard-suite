@@ -16,8 +16,8 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Clerk publishable key - replace with your own from Clerk dashboard
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_placeholder";
+// Clerk publishable key
+const CLERK_PUBLISHABLE_KEY = "pk_test_cXVhbGl0eS1hbGJhY29yZS0yMS5jbGVyay5hY2NvdW50cy5kZXYk";
 
 const App = () => (
   <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
