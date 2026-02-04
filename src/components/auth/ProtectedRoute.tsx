@@ -1,17 +1,11 @@
 import { useEffect } from 'react';
-import { useNavigate, Outlet } from 'react-router-dom';
-import { useAuth, useClerk } from '@clerk/clerk-react';
+import { Outlet } from 'react-router-dom';
+import { useAuth } from '@clerk/clerk-react';
 import { setAuthToken } from '@/lib/api';
+import NotAvailable from '@/pages/NotAvailable';
 
 export function ProtectedRoute() {
   const { isLoaded, isSignedIn, getToken } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isLoaded && !isSignedIn) {
-      navigate('/');
-    }
-  }, [isLoaded, isSignedIn, navigate]);
 
   // Set auth token for API requests
   useEffect(() => {
@@ -32,8 +26,9 @@ export function ProtectedRoute() {
     );
   }
 
+  // Show "Not Available" page instead of redirecting
   if (!isSignedIn) {
-    return null;
+    return <NotAvailable />;
   }
 
   return <Outlet />;

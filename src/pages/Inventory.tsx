@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { inventoryApi } from '@/lib/api';
-import { Plus, Pencil, Search, Package, Image } from 'lucide-react';
+import { Plus, Pencil, Search, Package } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -28,15 +28,6 @@ interface Product {
   image?: string;
 }
 
-// Mock data for demonstration
-const mockProducts: Product[] = [
-  { id: '1', name: 'Wireless Headphones', description: 'Premium noise-cancelling headphones', price: 299, stock: 45, category: 'Electronics', image: '' },
-  { id: '2', name: 'Smart Watch', description: 'Fitness tracking smartwatch', price: 199, stock: 32, category: 'Electronics', image: '' },
-  { id: '3', name: 'Running Shoes', description: 'Lightweight running shoes', price: 129, stock: 67, category: 'Sports', image: '' },
-  { id: '4', name: 'Leather Wallet', description: 'Genuine leather wallet', price: 59, stock: 120, category: 'Accessories', image: '' },
-  { id: '5', name: 'Coffee Maker', description: 'Automatic drip coffee maker', price: 89, stock: 28, category: 'Home', image: '' },
-];
-
 export default function Inventory() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isAddOpen, setIsAddOpen] = useState(false);
@@ -44,15 +35,11 @@ export default function Inventory() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const queryClient = useQueryClient();
 
-  const { data: productsData, isLoading } = useQuery({
+  const { data: productsData, isLoading, error } = useQuery({
     queryKey: ['inventory'],
     queryFn: async () => {
-      try {
-        const response = await inventoryApi.getAll();
-        return response.data;
-      } catch {
-        return mockProducts;
-      }
+      const response = await inventoryApi.getAll();
+      return response.data;
     },
   });
 
@@ -80,7 +67,7 @@ export default function Inventory() {
     },
   });
 
-  const products = (productsData || mockProducts).filter((p: Product) =>
+  const products = (productsData || []).filter((p: Product) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -104,6 +91,17 @@ export default function Inventory() {
     };
     updateMutation.mutate({ id: selectedProduct.id, data });
   };
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <PageHeader title="Inventory" description="Manage your product inventory" />
+        <div className="stat-card p-8 text-center text-destructive">
+          Failed to load inventory. Please check your backend connection.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

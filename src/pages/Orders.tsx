@@ -40,30 +40,17 @@ interface Order {
   createdAt?: string;
 }
 
-// Mock data for demonstration
-const mockOrders: Order[] = [
-  { id: 'ORD-001', customerName: 'John Doe', customerEmail: 'john@example.com', status: 'completed', total: 299, items: [{ name: 'Wireless Headphones', quantity: 1, price: 299 }], createdAt: '2024-04-10' },
-  { id: 'ORD-002', customerName: 'Jane Smith', customerEmail: 'jane@example.com', status: 'processing', total: 398, items: [{ name: 'Smart Watch', quantity: 2, price: 199 }], createdAt: '2024-04-12' },
-  { id: 'ORD-003', customerName: 'Bob Wilson', customerEmail: 'bob@example.com', status: 'pending', total: 129, items: [{ name: 'Running Shoes', quantity: 1, price: 129 }], createdAt: '2024-04-13' },
-  { id: 'ORD-004', customerName: 'Alice Brown', customerEmail: 'alice@example.com', status: 'shipped', total: 148, items: [{ name: 'Coffee Maker', quantity: 1, price: 89 }, { name: 'Leather Wallet', quantity: 1, price: 59 }], createdAt: '2024-04-14' },
-  { id: 'ORD-005', customerName: 'Charlie Davis', customerEmail: 'charlie@example.com', status: 'completed', total: 597, items: [{ name: 'Smart Watch', quantity: 3, price: 199 }], createdAt: '2024-04-15' },
-];
-
 export default function Orders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: ordersData, isLoading } = useQuery({
+  const { data: ordersData, isLoading, error } = useQuery({
     queryKey: ['orders'],
     queryFn: async () => {
-      try {
-        const response = await ordersApi.getAll();
-        return response.data;
-      } catch {
-        return mockOrders;
-      }
+      const response = await ordersApi.getAll();
+      return response.data;
     },
   });
 
@@ -79,7 +66,7 @@ export default function Orders() {
   });
 
   // Filter out cancelled orders
-  const orders = (ordersData || mockOrders)
+  const orders = (ordersData || [])
     .filter((o: Order) => o.status !== 'cancelled')
     .filter((o: Order) =>
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -95,6 +82,17 @@ export default function Orders() {
       default: return 'info';
     }
   };
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <PageHeader title="Orders" description="Manage customer orders" />
+        <div className="stat-card p-8 text-center text-destructive">
+          Failed to load orders. Please check your backend connection.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">

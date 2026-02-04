@@ -4,7 +4,7 @@ import { PageHeader } from '@/components/layout/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { customersApi } from '@/lib/api';
-import { Trash2, Search, Mail, Phone, Calendar } from 'lucide-react';
+import { Trash2, Search, Phone, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import {
   AlertDialog,
@@ -29,29 +29,15 @@ interface Customer {
   totalSpent?: number;
 }
 
-// Mock data for demonstration
-const mockCustomers: Customer[] = [
-  { id: '1', name: 'John Doe', email: 'john@example.com', phone: '+1 234 567 890', status: 'active', createdAt: '2024-01-15', totalOrders: 12, totalSpent: 1250 },
-  { id: '2', name: 'Jane Smith', email: 'jane@example.com', phone: '+1 234 567 891', status: 'active', createdAt: '2024-02-20', totalOrders: 8, totalSpent: 890 },
-  { id: '3', name: 'Bob Wilson', email: 'bob@example.com', phone: '+1 234 567 892', status: 'active', createdAt: '2024-03-10', totalOrders: 25, totalSpent: 3200 },
-  { id: '4', name: 'Alice Brown', email: 'alice@example.com', phone: '+1 234 567 893', status: 'active', createdAt: '2024-01-25', totalOrders: 5, totalSpent: 450 },
-  { id: '5', name: 'Charlie Davis', email: 'charlie@example.com', phone: '+1 234 567 894', status: 'active', createdAt: '2024-04-05', totalOrders: 15, totalSpent: 1800 },
-];
-
 export default function Customers() {
   const [searchTerm, setSearchTerm] = useState('');
   const queryClient = useQueryClient();
 
-  const { data: customersData, isLoading } = useQuery({
+  const { data: customersData, isLoading, error } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
-      try {
-        const response = await customersApi.getAll();
-        return response.data;
-      } catch {
-        // Return mock data if API fails
-        return mockCustomers;
-      }
+      const response = await customersApi.getAll();
+      return response.data;
     },
   });
 
@@ -67,12 +53,23 @@ export default function Customers() {
   });
 
   // Filter only active customers
-  const customers = (customersData || mockCustomers)
+  const customers = (customersData || [])
     .filter((c: Customer) => c.status === 'active')
     .filter((c: Customer) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+  if (error) {
+    return (
+      <div className="animate-fade-in">
+        <PageHeader title="Customers" description="Manage your active customers" />
+        <div className="stat-card p-8 text-center text-destructive">
+          Failed to load customers. Please check your backend connection.
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="animate-fade-in">
