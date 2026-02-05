@@ -37,7 +37,9 @@ export default function Customers() {
     queryKey: ['customers'],
     queryFn: async () => {
       const response = await customersApi.getAll();
-      return response.data;
+      // Backend returns { success: true, data: [] }
+      const result = response.data;
+      return Array.isArray(result) ? result : result?.data || [];
     },
   });
 
@@ -52,8 +54,8 @@ export default function Customers() {
     },
   });
 
-  // Filter only active customers
-  const customers = (customersData || [])
+  // Filter only active customers (exclude deleted)
+  const customers = (Array.isArray(customersData) ? customersData : [])
     .filter((c: Customer) => c.status === 'active')
     .filter((c: Customer) =>
       c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

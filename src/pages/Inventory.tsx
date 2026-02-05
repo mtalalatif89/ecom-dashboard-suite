@@ -39,7 +39,9 @@ export default function Inventory() {
     queryKey: ['inventory'],
     queryFn: async () => {
       const response = await inventoryApi.getAll();
-      return response.data;
+      // Backend returns { success: true, data: [] }
+      const result = response.data;
+      return Array.isArray(result) ? result : result?.data || [];
     },
   });
 
@@ -67,7 +69,7 @@ export default function Inventory() {
     },
   });
 
-  const products = (productsData || []).filter((p: Product) =>
+  const products = (Array.isArray(productsData) ? productsData : []).filter((p: Product) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
