@@ -50,7 +50,9 @@ export default function Orders() {
     queryKey: ['orders'],
     queryFn: async () => {
       const response = await ordersApi.getAll();
-      return response.data;
+      // Backend returns { success: true, data: [] }
+      const result = response.data;
+      return Array.isArray(result) ? result : result?.data || [];
     },
   });
 
@@ -65,9 +67,9 @@ export default function Orders() {
     },
   });
 
-  // Filter out cancelled orders
-  const orders = (ordersData || [])
-    .filter((o: Order) => o.status !== 'cancelled')
+  // Filter out cancelled and deleted orders
+  const orders = (Array.isArray(ordersData) ? ordersData : [])
+    .filter((o: Order) => o.status !== 'cancelled' && o.status !== 'deleted')
     .filter((o: Order) =>
       o.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       o.customerName.toLowerCase().includes(searchTerm.toLowerCase())

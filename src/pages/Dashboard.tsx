@@ -48,33 +48,27 @@ const paymentsData = [
 export default function Dashboard() {
   const { data: ordersData } = useQuery({
     queryKey: ['orders'],
-    queryFn: () => ordersApi.getAll(),
+    queryFn: async () => {
+      const response = await ordersApi.getAll();
+      // Backend returns { success: true, data: [] }
+      const result = response.data;
+      return Array.isArray(result) ? result : result?.data || [];
+    },
   });
 
   const { data: paymentsApiData } = useQuery({
     queryKey: ['payments'],
-    queryFn: () => paymentsApi.getAll(),
+    queryFn: async () => {
+      const response = await paymentsApi.getAll();
+      // Backend returns { success: true, data: [] }
+      const result = response.data;
+      return Array.isArray(result) ? result : result?.data || [];
+    },
   });
 
   // Calculate totals from API data or use defaults
-  // Handle various response formats: { data: [...] }, { orders: [...] }, or just [...]
-  const rawOrders = ordersData?.data;
-  const orders = Array.isArray(rawOrders) 
-    ? rawOrders 
-    : Array.isArray(rawOrders?.data) 
-      ? rawOrders.data 
-      : Array.isArray(rawOrders?.orders) 
-        ? rawOrders.orders 
-        : [];
-  
-  const rawPayments = paymentsApiData?.data;
-  const payments = Array.isArray(rawPayments) 
-    ? rawPayments 
-    : Array.isArray(rawPayments?.data) 
-      ? rawPayments.data 
-      : Array.isArray(rawPayments?.payments) 
-        ? rawPayments.payments 
-        : [];
+  const orders = Array.isArray(ordersData) ? ordersData : [];
+  const payments = Array.isArray(paymentsApiData) ? paymentsApiData : [];
 
   const totalOrders = orders.length || 435;
   const cancelledOrders = orders.filter((o: any) => o.status === 'cancelled').length || 25;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// TODO: Replace with your backend URL
-const API_BASE_URL = 'YOUR_BACKEND_URL_HERE';
+// Backend API URL
+const API_BASE_URL = 'http://localhost:3000';
 
 // Create axios instance with default config
 export const api = axios.create({
@@ -23,8 +23,8 @@ export const setAuthToken = (token: string | null) => {
 
 // Protected API endpoints - requires Clerk authentication
 export const customersApi = {
-  getAll: () => api.get('/customer'),
-  delete: (id: string) => api.post(`/customer/delete/${id}`),
+  getAll: () => api.get('/customers/customer'),
+  delete: (id: string) => api.post(`/customers/customer/delete/${id}`),
 };
 
 export const inventoryApi = {
@@ -39,7 +39,7 @@ export const inventoryApi = {
 export const ordersApi = {
   getAll: () => api.get('/orders'),
   updateStatus: (id: string, status: string) => 
-    api.patch(`/orders/status/${id}`, { status }),
+    api.post(`/orders/order/status/${id}`, { status }),
 };
 
 export const paymentsApi = {
