@@ -11,7 +11,7 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import { ShoppingCart, XCircle, DollarSign, TrendingUp } from 'lucide-react';
+import { ShoppingCart, XCircle, DollarSign, TrendingUp, AlertCircle } from 'lucide-react';
 import { ordersApi, paymentsApi } from '@/lib/api';
 
 // Mock data for charts
@@ -46,33 +46,27 @@ const paymentsData = [
 ];
 
 export default function Dashboard() {
-  const { data: ordersData } = useQuery({
+  const { data: ordersData, isLoading: ordersLoading, error: ordersError } = useQuery({
     queryKey: ['orders'],
-    queryFn: async () => {
-      const response = await ordersApi.getAll();
-      // Backend returns { success: true, data: [] }
-      const result = response.data;
-      return Array.isArray(result) ? result : result?.data || [];
-    },
+    queryFn: () => ordersApi.getAll(),
   });
 
-  const { data: paymentsApiData } = useQuery({
+  const { data: paymentsApiData, isLoading: paymentsLoading, error: paymentsError } = useQuery({
     queryKey: ['payments'],
-    queryFn: async () => {
-      const response = await paymentsApi.getAll();
-      // Backend returns { success: true, data: [] }
-      const result = response.data;
-      return Array.isArray(result) ? result : result?.data || [];
-    },
+    queryFn: () => paymentsApi.getAll(),
   });
 
-  // Calculate totals from API data or use defaults
+  // Data is already unwrapped and guaranteed to be an array by api.ts
   const orders = Array.isArray(ordersData) ? ordersData : [];
   const payments = Array.isArray(paymentsApiData) ? paymentsApiData : [];
 
-  const totalOrders = orders.length || 435;
-  const cancelledOrders = orders.filter((o: any) => o.status === 'cancelled').length || 25;
-  const totalPayments = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0) || 43500;
+  // Calculate totals from API data
+  const totalOrders = orders.length;
+  const cancelledOrders = orders.filter((o: any) => o.status === 'cancelled').length;
+  const totalPayments = payments.reduce((sum: number, p: any) => sum + (p.amount || 0), 0);
+
+  const isLoading = ordersLoading || paymentsLoading;
+  const hasError = ordersError || paymentsError;
 
   return (
     <div className="animate-fade-in">
@@ -81,25 +75,32 @@ export default function Dashboard() {
         description="Overview of your store's performance"
       />
 
+      {hasError && (
+        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 flex items-center gap-3 text-destructive">
+          <AlertCircle className="w-5 h-5" />
+          <span>Failed to load some data. Please check your backend connection.</span>
+        </div>
+      )}
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <StatCard
           title="Total Orders"
-          value={totalOrders.toLocaleString()}
+          value={isLoading ? '...' : totalOrders.toLocaleString()}
           change="+12.5%"
           icon={ShoppingCart}
           color="primary"
         />
         <StatCard
           title="Cancelled Orders"
-          value={cancelledOrders.toLocaleString()}
+          value={isLoading ? '...' : cancelledOrders.toLocaleString()}
           change="-3.2%"
           icon={XCircle}
           color="destructive"
         />
         <StatCard
           title="Total Revenue"
-          value={`$${totalPayments.toLocaleString()}`}
+          value={isLoading ? '...' : `$${totalPayments.toLocaleString()}`}
           change="+18.7%"
           icon={DollarSign}
           color="accent"

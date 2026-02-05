@@ -35,12 +35,7 @@ export default function Customers() {
 
   const { data: customersData, isLoading, error } = useQuery({
     queryKey: ['customers'],
-    queryFn: async () => {
-      const response = await customersApi.getAll();
-      // Backend returns { success: true, data: [] }
-      const result = response.data;
-      return Array.isArray(result) ? result : result?.data || [];
-    },
+    queryFn: () => customersApi.getAll(),
   });
 
   const deleteMutation = useMutation({
@@ -54,6 +49,7 @@ export default function Customers() {
     },
   });
 
+  // Data is already unwrapped and guaranteed to be an array by api.ts
   // Filter only active customers (exclude deleted)
   const customers = (Array.isArray(customersData) ? customersData : [])
     .filter((c: Customer) => c.status === 'active')

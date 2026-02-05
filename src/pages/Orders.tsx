@@ -48,12 +48,7 @@ export default function Orders() {
 
   const { data: ordersData, isLoading, error } = useQuery({
     queryKey: ['orders'],
-    queryFn: async () => {
-      const response = await ordersApi.getAll();
-      // Backend returns { success: true, data: [] }
-      const result = response.data;
-      return Array.isArray(result) ? result : result?.data || [];
-    },
+    queryFn: () => ordersApi.getAll(),
   });
 
   const cancelMutation = useMutation({
@@ -67,6 +62,7 @@ export default function Orders() {
     },
   });
 
+  // Data is already unwrapped and guaranteed to be an array by api.ts
   // Filter out cancelled and deleted orders
   const orders = (Array.isArray(ordersData) ? ordersData : [])
     .filter((o: Order) => o.status !== 'cancelled' && o.status !== 'deleted')

@@ -1,22 +1,31 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useAuth } from '@clerk/clerk-react';
-import { setAuthToken } from '@/lib/api';
+import { injectAuth, setAuthToken } from '@/lib/api';
 import NotAvailable from '@/pages/NotAvailable';
 
 export function ProtectedRoute() {
   const { isLoaded, isSignedIn, getToken } = useAuth();
 
-  // Set auth token for API requests
+  // Memoize the token getter for the interceptor
+  const tokenGetter = useCallback(async () => {
+    return await getToken();
+  }, [getToken]);
+
+  // Inject auth into API module and set initial token
   useEffect(() => {
     if (isSignedIn) {
+      // Inject the token getter for the request interceptor
+      injectAuth(tokenGetter);
+      
+      // Also set the initial token for immediate use
       const updateToken = async () => {
         const token = await getToken();
         setAuthToken(token);
       };
       updateToken();
     }
-  }, [isSignedIn, getToken]);
+  }, [isSignedIn, getToken, tokenGetter]);
 
   if (!isLoaded) {
     return (
