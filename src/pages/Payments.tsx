@@ -20,14 +20,12 @@ export default function Payments() {
 
   const { data: paymentsData, isLoading, error } = useQuery({
     queryKey: ['payments'],
-    queryFn: async () => {
-      const response = await paymentsApi.getAll();
-      return response.data;
-    },
+    queryFn: () => paymentsApi.getAll(),
   });
 
+  // Data is already unwrapped and guaranteed to be an array by api.ts
   // Show all payments including those from cancelled orders for accounting transparency
-  const payments = (paymentsData || []).filter((p: Payment) =>
+  const payments = (Array.isArray(paymentsData) ? paymentsData : []).filter((p: Payment) =>
     p.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.orderId.toLowerCase().includes(searchTerm.toLowerCase())

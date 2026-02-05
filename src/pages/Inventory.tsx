@@ -37,12 +37,7 @@ export default function Inventory() {
 
   const { data: productsData, isLoading, error } = useQuery({
     queryKey: ['inventory'],
-    queryFn: async () => {
-      const response = await inventoryApi.getAll();
-      // Backend returns { success: true, data: [] }
-      const result = response.data;
-      return Array.isArray(result) ? result : result?.data || [];
-    },
+    queryFn: () => inventoryApi.getAll(),
   });
 
   const uploadMutation = useMutation({
@@ -69,6 +64,7 @@ export default function Inventory() {
     },
   });
 
+  // Data is already unwrapped and guaranteed to be an array by api.ts
   const products = (Array.isArray(productsData) ? productsData : []).filter((p: Product) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
